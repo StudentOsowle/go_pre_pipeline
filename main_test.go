@@ -1,8 +1,7 @@
 package main
-import "fmt"
 
+import "testing"
 
+func TestMain(t *testing.T) {
 
-function TestMain(t *testing.T) {
-	
 }
