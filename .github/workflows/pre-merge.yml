@@ -1,0 +1,48 @@
+name: Pre-Merge Checks
+
+on:
+  pull_request: 
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Linter
+        run: echo "run your linter here"
+
+  build & test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set up go 
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+            
+      - name: build
+        run: go build ./...
+      
+      - name: test
+        run: go test ./...
+      # - uses: actions/checkout@v4
+      # - name: Run Tests
+      # - run: echo "run your tests here"
+
+security:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: gitLeaks (secrets scan)
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Trivy (vuln scan)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: fs
+        severity: HIGH,CRITICAL
+        exit-code: 1 
