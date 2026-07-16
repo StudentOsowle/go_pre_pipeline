@@ -1,0 +1,8 @@
+2026/07/15 16:29:33 go-waf listening on :8080, proxying to http://127.0.0.1:3000
+2026/07/15 16:33:20 go-waf listening on :8080, proxying to http://127.0.0.1:3000
+2026/07/15 16:33:39 go-waf listening on :8080, proxying to http://127.0.0.1:3000
+2026/07/15 16:36:58 go-waf listening on :8080, proxying to http://127.0.0.1:3000
+2026/07/15 17:11:53 BLOCKED ip=::1 path=/ ua="python-requests/2.31" reason=suspicious User-Agent signature: python-requests/2.31
+2026/07/15 17:11:54 BLOCKED ip=::1 path=/ ua="Go-http-client/1.1" reason=suspicious User-Agent signature: Go-http-client/1.1
+2026/07/15 17:11:54 BLOCKED ip=::1 path=/ ua="" reason=suspicious User-Agent signature: 
+2026/07/15 17:11:55 BLOCKED ip=::1 path=/ ua="curl/7.81.0" reason=suspicious User-Agent signature: curl/7.81.0
