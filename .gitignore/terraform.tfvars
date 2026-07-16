@@ -1,0 +1,6 @@
+aws_region = "us-west-2"
+aws_ami_image = "ami-0b0b27dd5c039480f"
+aws_instance_type = "t3.micro"
+vpc_cidr = "10.0.0.0/16"
+public_bake_subnet = "10.0.1.0/24"
+private_a_subnet = "10.0.10.0/24"
