@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSnapshotOfBuildVolumeOnly",
+      "Effect": "Allow",
+      "Action": "ec2:CreateSnapshot",
+      "Resource": "arn:aws:ec2:*:235494800322:volume/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "packer-build"
+        }
+      }
+    },
+    {
+      "Sid": "AllowTaggingOwnSnapshot",
+      "Effect": "Allow",
+      "Action": "ec2:CreateTags",
+      "Resource": "arn:aws:ec2:*:235494800322:snapshot/*"
+    },
+    {
+      "Sid": "AllowForensicsUploadToOneBucketPrefixOnly",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::scan-results-sandbox-orion-s3/ami-builds/*"
+    },
+    {
+      "Sid": "AllowSelfDescribeForVolumeLookup",
+      "Effect": "Allow",
+      "Action": "ec2:DescribeInstances",
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+forensics_s3_bucket         = "scan-results-sandbox-orion-s3"
+manifest_encryption_password = "LMjXvEeJGFWD9HAzRUY2i6fwoSx40Np3"
+# subnet_id                   = "subnet-007532ab1e547cfe7"
+# iam_instance_profile        = "SandBox-ssm-profile"
+# owners                      = ""

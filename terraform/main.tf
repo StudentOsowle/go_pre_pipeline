@@ -93,6 +93,14 @@ resource "aws_security_group" "wazuh_server_sg" {
     description = "SSM-only access, outbound HTTPS for SSM + github"
     vpc_id      = aws_vpc.SandBox.id
 
+    ingress {
+        description = "Admin access - my IP only"
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["73.189.142.162/32"]
+    }
+
     egress {
         description = "HTTPS out - SSM control plane + GitHub"
         from_port   = 443
@@ -127,6 +135,16 @@ resource "aws_iam_instance_profile" "wazuh_ssm" {
     role = aws_iam_role.wazuh_ssm.name
 }
 
+resource "aws_iam_policy" "forensics_access" {
+  name   = "SandBox-forensics-policy"
+  policy = file("${path.module}/iam-policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "forensics" {
+  role       = aws_iam_role.wazuh_ssm.name
+  policy_arn = aws_iam_policy.forensics_access.arn
+}
+
 resource "aws_instance" "SandBox" {
     ami                         = var.aws_ami_image
     instance_type               = var.aws_instance_type
@@ -134,7 +152,7 @@ resource "aws_instance" "SandBox" {
     vpc_security_group_ids      = [aws_security_group.wazuh_server_sg.id]
     iam_instance_profile        = aws_iam_instance_profile.wazuh_ssm.name
     associate_public_ip_address = false
-    user_data                   = templatefile("${path.module}/code_pull.tpl.sh", {})
+    user_data = templatefile("${path.module}/scripts/code_pull.tpl.sh", {})
 
 
     tags = { Name = "SandBox"}
