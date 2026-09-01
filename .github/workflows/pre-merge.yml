@@ -31,6 +31,13 @@ jobs:
         working-directory: go
         run: go test ./...
 
+      - name: Notify Slack on failure
+        if: failure()
+        run : |
+         curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"🚨 Build/Test Pipeline Failed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}. See: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
   security:
     runs-on: ubuntu-latest
     steps:
@@ -49,3 +56,10 @@ jobs:
           scan-type: fs
           severity: HIGH,CRITICAL
           exit-code: 1
+
+      - name: notify Slack on Failure
+        if: failure()
+        run : |
+         curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"🚨 First Pipeline Failed: security job failed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}. See: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
