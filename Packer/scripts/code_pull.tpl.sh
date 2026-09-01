@@ -29,6 +29,7 @@ Description=Go WAF reverse proxy
 After=network.target
 
 [Service]
+WorkingDirectory=/opt/app/go
 ExecStart=/usr/local/bin/waf
 Restart=always
 RestartSec=5

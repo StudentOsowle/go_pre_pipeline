@@ -3,10 +3,13 @@ package waf
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Blocklist struct {
@@ -127,4 +130,49 @@ func (b *Blocklist) Remove(ip net.IP) {
 	delete(b.ips, ip.String())
 	delete(b.dynamic, ip.String())
 	b.mu.Unlock()
+}
+
+// FetchAndReload downloads a blocklist file from url and atomically
+// replaces the file at path, then reloads it into the Blocklist.
+func (b *Blocklist) FetchAndReload(url, path string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("fetching %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("fetching %s: unexpected status %s", url, resp.Status)
+	}
+
+	tmp := path + ".tmp"
+	f, err := os.Create(tmp)
+	if err != nil {
+		return fmt.Errorf("creating temp file %s: %w", tmp, err)
+	}
+
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		f.Close()
+		return fmt.Errorf("writing %s: %w", tmp, err)
+	}
+	f.Close()
+
+	if err := os.Rename(tmp, path); err != nil {
+		return fmt.Errorf("replacing %s: %w", path, err)
+	}
+	return b.LoadFile(path)
+}
+
+// StartAutoRefresh runs FetchAndReload on a ticker, logging errors instead
+// of crashing the WAF if a fetch fails (stale data is safer than no data).
+func (b *Blocklist) StartAutoRefresh(url, path string, interval time.Duration, logf func(format string, args ...any)) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := b.FetchAndReload(url, path); err != nil {
+				logf("waf: auto-refresh failed for %s: %v", url, err)
+			}
+		}
+	}()
 }

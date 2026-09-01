@@ -6,28 +6,30 @@ import (
 )
 
 type Config struct {
-	ListenAddr           string
-	BackendURL           string
-	BlocklistPath        string
-	BeaconWindowSize     int
-	BeaconMinSamples     int
-	BeaconMaxCV          float64
-	BeaconMinIntervalSec float64
-	BeaconMaxIntervalSec float64
-	LogPath              string
+	ListenAddr            string
+	BackendURL            string
+	BlocklistPath         string
+	BeaconWindowSize      int
+	BeaconMinSamples      int
+	BeaconMaxCV           float64
+	BeaconMinIntervalSec  float64
+	BeaconMaxIntervalSec  float64
+	LogPath               string
+	OutBoundBlocklistPath string
 }
 
 func loadConfig() Config {
 	cfg := Config{
-		ListenAddr:           getEnv("WAF_LISTEN_ADDR", ":8080"),
-		BackendURL:           getEnv("WAF_BACKEND_URL", "http://127.0.0.1:3000"),
-		BlocklistPath:        getEnv("WAF_BLOCKLIST_PATH", "blocklist.txt"),
-		BeaconWindowSize:     getEnvInt("WAF_BEACON_WINDOW", 8),
-		BeaconMinSamples:     getEnvInt("WAF_BEACON_MIN_SAMPLES", 4),
-		BeaconMaxCV:          getEnvFloat("WAF_BEACON_MAX_CV", 0.15),
-		BeaconMinIntervalSec: getEnvFloat("WAF_BEACON_MIN_INTERVAL", 3),
-		BeaconMaxIntervalSec: getEnvFloat("WAF_BEACON_MAX_INTERVAL", 3600),
-		LogPath:              getEnv("WAF_LOG_PATH", ""),
+		ListenAddr:            getEnv("WAF_LISTEN_ADDR", ":8080"),
+		BackendURL:            getEnv("WAF_BACKEND_URL", "http://127.0.0.1:3000"),
+		BlocklistPath:         getEnv("WAF_BLOCKLIST_PATH", "waf/blocklists/inbound.txt"),
+		OutBoundBlocklistPath: getEnv("WAF_OUTBOUND_BLOCKLIST", "waf/blocklists/outbound_blocklist.txt"),
+		BeaconWindowSize:      getEnvInt("WAF_BEACON_WINDOW", 8),
+		BeaconMinSamples:      getEnvInt("WAF_BEACON_MIN_SAMPLES", 4),
+		BeaconMaxCV:           getEnvFloat("WAF_BEACON_MAX_CV", 0.15),
+		BeaconMinIntervalSec:  getEnvFloat("WAF_BEACON_MIN_INTERVAL", 3),
+		BeaconMaxIntervalSec:  getEnvFloat("WAF_BEACON_MAX_INTERVAL", 3600),
+		LogPath:               getEnv("WAF_LOG_PATH", ""),
 	}
 	return cfg
 }

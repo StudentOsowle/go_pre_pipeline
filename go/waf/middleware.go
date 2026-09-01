@@ -16,10 +16,10 @@ const (
 )
 
 type Inspector struct {
-	Blocklist *Blocklist
-	Beacon    *BeaconDetector
-	Logger    *log.Logger
-
+	Blocklist         *Blocklist
+	OutboundBlocklist *Blocklist
+	Beacon            *BeaconDetector
+	Logger            *log.Logger
 	AutoBlockOnBeacon bool
 }
 
