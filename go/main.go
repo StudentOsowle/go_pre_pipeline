@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/StudentOsowle/go_pre_pipeline/waf"
 )
@@ -33,6 +34,25 @@ func main() {
 		log.Fatalf("loading blocklist: %v", err)
 	}
 
+	outboundBlocklist := waf.NewBlocklist()
+	if err := outboundBlocklist.LoadFile(cfg.OutBoundBlocklistPath); err != nil {
+		log.Fatalf("loading outbound blocklist: %v", err)
+	}
+
+	blocklist.StartAutoRefresh(
+		"https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/inbound.txt",
+		cfg.BlocklistPath,
+		2*time.Hour,
+		logger.Printf,
+	)
+
+	outboundBlocklist.StartAutoRefresh(
+		"https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/outbound.txt",
+		cfg.OutBoundBlocklistPath,
+		2*time.Hour,
+		logger.Printf,
+	)
+
 	beacon := waf.NewBeaconDetector(
 		cfg.BeaconWindowSize,
 		cfg.BeaconMinSamples,
@@ -43,12 +63,17 @@ func main() {
 
 	inspector := &waf.Inspector{
 		Blocklist:         blocklist,
+		OutboundBlocklist: outboundBlocklist,
 		Beacon:            beacon,
 		Logger:            logger,
 		AutoBlockOnBeacon: false,
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(backend)
+	proxy.Transport = &waf.OutboundGuard{
+		Blocklist: outboundBlocklist,
+		Logger:    logger,
+	}
 	protected := inspector.Middleware(proxy)
 
 	logger.Printf("go-waf listening on %s, proxying to %s", cfg.ListenAddr, cfg.BackendURL)
