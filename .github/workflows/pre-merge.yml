@@ -10,8 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Linter
-        run: echo "run your linter here"
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: go
+          version: latest
+      
+      
+      # - name: Notify Slack on failure
+      #   if: failure()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data "{\"text\":\"🚨 Lint check failed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}. See: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # - name: Notify Slack on success
+      #   if: success()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data "{\"text\":\"✅ Lint check passed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}.\"}" \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}  
 
   build-and-test:
     runs-on: ubuntu-latest
@@ -76,4 +99,32 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data "{\"text\":\"✅ Security scan passed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}.\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  waf-blocklist-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run WAF blocklist tests
+        working-directory: go
+        run: go test ./waf/... -run TestBlocklist -v
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"🚨 First WAF Scan Failed: blocklist verification failed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}. See: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"✅ WAF blocklist checks passed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}.\"}" \
             ${{ secrets.SLACK_WEBHOOK_URL }}
