@@ -10,8 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Linter
-        run: echo "run your linter here"
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: go
+          version: latest
+      
+      
+      # - name: Notify Slack on failure
+      #   if: failure()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data "{\"text\":\"🚨 Lint check failed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}. See: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # - name: Notify Slack on success
+      #   if: success()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data "{\"text\":\"✅ Lint check passed on ${{ github.repository }} — commit ${{ github.sha }} by ${{ github.actor }}.\"}" \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}  
 
   build-and-test:
     runs-on: ubuntu-latest
